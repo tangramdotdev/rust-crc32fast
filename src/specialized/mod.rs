@@ -1,5 +1,31 @@
 cfg_if::cfg_if! {
-    if #[cfg(all(
+    // In debug builds, skip hardware-specific intrinsics to support alternative
+    // codegen backends like Cranelift that don't implement them.
+    if #[cfg(debug_assertions)] {
+        #[derive(Clone)]
+        pub enum State {}
+        impl State {
+            pub fn new(_: u32) -> Option<Self> {
+                None
+            }
+
+            pub fn update(&mut self, _buf: &[u8]) {
+                match *self {}
+            }
+
+            pub fn finalize(self) -> u32 {
+                match self {}
+            }
+
+            pub fn reset(&mut self) {
+                match *self {}
+            }
+
+            pub fn combine(&mut self, _other: u32, _amount: u64) {
+                match *self {}
+            }
+        }
+    } else if #[cfg(all(
         target_feature = "sse2",
         any(target_arch = "x86", target_arch = "x86_64")
     ))] {
@@ -21,7 +47,7 @@ cfg_if::cfg_if! {
             }
 
             pub fn finalize(self) -> u32 {
-                match self{}
+                match self {}
             }
 
             pub fn reset(&mut self) {
